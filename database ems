@@ -1,0 +1,82 @@
+-- CREATE DATABASE
+CREATE DATABASE IF NOT EXISTS ems;
+USE ems;
+
+-- Departments
+CREATE TABLE departments (
+  department_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  location VARCHAR(100)
+) ENGINE=InnoDB;
+
+-- Jobs / Roles
+CREATE TABLE jobs (
+  job_id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(100) NOT NULL,
+  min_salary DECIMAL(10,2),
+  max_salary DECIMAL(10,2)
+) ENGINE=InnoDB;
+
+-- Employees (self-referential manager_id)
+CREATE TABLE employees (
+  employee_id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  phone VARCHAR(20),
+  hire_date DATE NOT NULL,
+  job_id INT,
+  department_id INT,
+  manager_id INT,
+  salary DECIMAL(10,2) NOT NULL,
+  status ENUM('active','inactive','terminated') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (department_id) REFERENCES departments(department_id),
+  FOREIGN KEY (job_id) REFERENCES jobs(job_id),
+  FOREIGN KEY (manager_id) REFERENCES employees(employee_id)
+) ENGINE=InnoDB;
+
+-- Payroll records (one row per pay period per employee)
+CREATE TABLE payrolls (
+  payroll_id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  pay_period_start DATE NOT NULL,
+  pay_period_end DATE NOT NULL,
+  gross_pay DECIMAL(12,2) NOT NULL,
+  tax DECIMAL(12,2) DEFAULT 0,
+  net_pay DECIMAL(12,2) AS (gross_pay - tax) STORED,
+  processed_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+) ENGINE=InnoDB;
+
+-- Projects & employee-project mapping
+CREATE TABLE projects (
+  project_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150),
+  client VARCHAR(150),
+  start_date DATE,
+  end_date DATE,
+  status ENUM('planned','active','completed','on-hold') DEFAULT 'planned'
+) ENGINE=InnoDB;
+
+CREATE TABLE employee_projects (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  project_id INT NOT NULL,
+  allocation_pct TINYINT DEFAULT 100,
+  start_date DATE,
+  end_date DATE,
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+  FOREIGN KEY (project_id) REFERENCES projects(project_id)
+) ENGINE=InnoDB;
+
+-- Audit table for salary changes
+CREATE TABLE employee_audit (
+  audit_id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  action VARCHAR(50),
+  old_salary DECIMAL(12,2),
+  new_salary DECIMAL(12,2),
+  changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;

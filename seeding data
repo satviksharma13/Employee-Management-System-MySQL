@@ -1,0 +1,22 @@
+INSERT INTO departments (name, location) VALUES
+('Engineering','Bengaluru'), ('HR','Patna'), ('Sales','Delhi');
+
+INSERT INTO jobs (title, min_salary, max_salary) VALUES
+('Software Engineer',30000,200000),
+('Senior Engineer',80000,350000),
+('HR Executive',20000,90000);
+
+-- Insert a manager first (no manager_id)
+INSERT INTO employees (first_name,last_name,email,phone,hire_date,job_id,department_id,salary)
+VALUES ('Amit','Kumar','amit@company.com','9999000001','2018-01-10',2,1,180000);
+
+-- Insert others referencing manager (employee_id of Amit will be 1 if DB empty)
+INSERT INTO employees (first_name,last_name,email,phone,hire_date,job_id,department_id,manager_id,salary)
+VALUES
+('Suman','Roy','suman@company.com','9999000002','2020-07-15',1,1,1,90000),
+('Priya','Sharma','priya@company.com','9999000003','2021-03-01',3,2,1,60000);
+
+-- Sample project
+INSERT INTO projects (name, client, start_date, status) VALUES ('CRM Migration','Acme Corp','2024-10-01','active');
+INSERT INTO employee_projects (employee_id, project_id, allocation_pct, start_date)
+VALUES (2,1,70,'2024-10-01');
